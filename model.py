@@ -10,23 +10,25 @@ tf = (10 - re) / ve
 t = np.linspace(0, tf, 1000)
 
 ke = .01
-k = 1
 d = 1.
+k = ke / d**3 * 1000
 yp, ym = d / 2., -d / 2.
 
 # vector of initial conditions is (re, 0, yp, ym, ve, 0, 0, 0, 0, 0, 0, 0)
-po = [re, 0, yp * 1.1, ym*1.1, ve, 0, 0, 0, 0, 0, 0, 0]
+po = [re, 0, yp * 1.1, ym * 1.1, ve, 0, 0, 0, 0, 0, 0, 0]
 
-# vector of functions is (xe, ye, yu, yd, vxe, vye, vyu, vyd, axe, aye, ayu, ayd)
+# vector of functions is
+# (xe, ye, yu, yd, vxe, vye, vyu, vyd, axe, aye, ayu, ayd)
 
 
 def Fc(x1, y1, x2, y2):
-    r = np.sqrt((x1-x1)**2 + (y1-y2)**2)
+    r = np.sqrt((x1 - x1)**2 + (y1 - y2)**2)
     return ke / r**2
 
 
 def f(p, t):
-    '''Returns derivative of vector (xe, ye, yu, yd, vxe, vye, vyu, vyd, axe, aye, ayu, ayd)
+    '''Returns derivative of vector
+    (xe, ye, yu, yd, vxe, vye, vyu, vyd, axe, aye, ayu, ayd)
     '''
     xe, ye, yu, yd, vxe, vye, vyu, vyd, axe, aye, ayu, ayd = p
 
@@ -42,22 +44,25 @@ def f(p, t):
     dayudt = -k * (yu - yp) + Fc(xe, ye, 0, yu) * Sphi(yu)
     dayddt = -k * (yd - ym) + Fc(xe, ye, 0, yd) * Sphi(yd)
 
-    dpdt = [vxe, vye, vyu, vyd, axe, aye, ayu, ayd, daxedt, dayedt, dayudt, dayddt]
+    dpdt = [vxe, vye, vyu, vyd, axe, aye, ayu, ayd, daxedt, dayedt,
+            dayudt, dayddt]
 
     return dpdt
 
 
 sol = integrate.odeint(f, po, t, full_output=1)
 
-fig1, ax = plt.subplots(1 , 1, figsize=(12, 8))
+fig1, ax = plt.subplots(1, 1, figsize=(12, 8))
 ax.set_xlim((re, 10))
 ax.set_ylim((d, -d))
 
 ims = []
 
+tx, ty = -1000, -.05
 for s in range(1000):
-    x = sol[0][s, 0], 0, 0
-    y = sol[0][s, 1:4]
+    tx += t[s] * ve/100.
+    x = sol[0][s, 0], 0, 0, tx
+    y = sol[0][s, 1], sol[0][s, 2], sol[0][s, 3], ty
     ims.append((plt.scatter(x, y, color='b', s=10), ))
 
 im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=3000)
