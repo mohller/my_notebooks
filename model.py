@@ -11,11 +11,12 @@ t = np.linspace(0, tf, 1000)
 
 ke = .01
 d = 1.
-k = ke / d**3 * 1000
+k = .1
 yp, ym = d / 2., -d / 2.
 
-# vector of initial conditions is (re, 0, yp, ym, ve, 0, 0, 0, 0, 0, 0, 0)
-po = [re, 0, yp * 1.1, ym * 1.1, ve, 0, 0, 0, 0, 0, 0, 0]
+# vector of initial conditions is: 
+#    (re, 0,     yp,       ym, ve, 0, 0, 0, 0, 0, 0, 0)
+po = [re, 0., yp * 1.5, ym * 1.5, ve, 0, 0, 0, 0, 0, 0, 0]
 
 # vector of functions is
 # (xe, ye, yu, yd, vxe, vye, vyu, vyd, axe, aye, ayu, ayd)
@@ -24,6 +25,17 @@ po = [re, 0, yp * 1.1, ym * 1.1, ve, 0, 0, 0, 0, 0, 0, 0]
 def Fc(x1, y1, x2, y2):
     r = np.sqrt((x1 - x1)**2 + (y1 - y2)**2)
     return ke / r**2
+
+
+def F(r):
+    # Potential confining electronss
+    Fo = .001
+    if r > d / 20.:
+        return -Fo
+    elif r < d / 20.:
+        return Fo
+    else:
+        return 0
 
 
 def f(p, t):
@@ -38,11 +50,11 @@ def f(p, t):
     def Cphi(z):
         return np.cos(np.arctan((z - ye) / xe))
 
-    daxedt = - Fc(xe, ye, 0, yu) * Sphi(yu) - Fc(xe, ye, 0, yd) * Sphi(yd)
+    daxedt = - Fc(xe, ye, 0, yu) * Sphi(yu) - Fc(xe, ye, 0, yd) * Sphi(yd)  
     dayedt = - Fc(xe, ye, 0, yu) * Cphi(yu) + Fc(xe, ye, 0, yd) * Cphi(yd)
 
-    dayudt = -k * (yu - yp) + Fc(xe, ye, 0, yu) * Sphi(yu)
-    dayddt = -k * (yd - ym) + Fc(xe, ye, 0, yd) * Sphi(yd)
+    dayudt = F(yu - yp) #+ Fc(xe, ye, 0, yu) * Sphi(yu)
+    dayddt = F(yd - ym) #+ Fc(xe, ye, 0, yd) * Sphi(yd)
 
     dpdt = [vxe, vye, vyu, vyd, axe, aye, ayu, ayd, daxedt, dayedt,
             dayudt, dayddt]
@@ -60,16 +72,18 @@ ims = []
 
 tx, ty = -1000, -.05
 for s in range(1000):
-    tx += t[s] * ve/100.
+    tx = -1000 + t[s] * ve
     x = sol[0][s, 0], 0, 0, tx
     y = sol[0][s, 1], sol[0][s, 2], sol[0][s, 3], ty
     ims.append((plt.scatter(x, y, color='b', s=10), ))
 
-im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=3000)
-
+im_ani = animation.ArtistAnimation(fig1, ims, interval=10, repeat_delay=3000)
+# plt.plot(t, sol[0][:, 0])
+# plt.semilogy()
+print sol[0][:20, 8]
+print sol[0][:20, 10]
+print sol[0][:20, 11]
 plt.show()
-
-plt.scatter
 
 # from numpy import sin, cos
 # import numpy as np
@@ -95,7 +109,7 @@ plt.scatter
 #                M2*G*sin(state[2])*cos(del_) +
 #                M2*L2*state[3]*state[3]*sin(del_) -
 #                (M1 + M2)*G*sin(state[0]))/den1
-
+s
 #     dydx[2] = state[3]
 
 #     den2 = (L2/L1)*den1
